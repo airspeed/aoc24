@@ -6,8 +6,9 @@ let input = """
 """
 let lines =
 input.split(separator: "\n")
-    .map({ $0.split(separator: " ")
-    .compactMap({ Int($0) }) })
+    .map({
+          $0.split(separator: " ").compactMap({ Int($0) })
+    })
 let firstList =
 lines.compactMap(\.first).sorted()
 let secondList =
