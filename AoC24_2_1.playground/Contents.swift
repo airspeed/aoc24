@@ -10,45 +10,7 @@ input.split(separator: "\n")
 let safe =
 lines
     .filter { report in
-        report.reduce(Report.epsilon) { acc, next in
-            guard let lastElement = acc.element else { // first element
-                return Report(element: next, ordering: nil, unsafeCount: acc.unsafeCount)
-            }
-            guard abs(lastElement - next) > 0 && abs(lastElement - next) < 4 else {
-                return Report(element: lastElement, ordering: acc.ordering, unsafeCount: acc.unsafeCount + 1)
-            }
-            guard let lastOrdering = acc.ordering else { // second valid element
-                return Report(
-                    element: next, ordering: lastElement.comparing(next), unsafeCount: acc.unsafeCount
-                )
-            }
-            guard lastOrdering == lastElement.comparing(next) else {
-                return Report(element: lastElement, ordering: lastOrdering, unsafeCount: acc.unsafeCount + 1)
-            }
-            return Report(
-                element: next, ordering: lastElement.comparing(next), unsafeCount: acc.unsafeCount
-            )
-        }.isSafe
-        ||
-        report.reversed().reduce(Report.epsilon) { acc, next in
-            guard let lastElement = acc.element else { // first element
-                return Report(element: next, ordering: nil, unsafeCount: acc.unsafeCount)
-            }
-            guard abs(lastElement - next) > 0 && abs(lastElement - next) < 4 else {
-                return Report(element: lastElement, ordering: acc.ordering, unsafeCount: acc.unsafeCount + 1)
-            }
-            guard let lastOrdering = acc.ordering else { // second valid element
-                return Report(
-                    element: next, ordering: lastElement.comparing(next), unsafeCount: acc.unsafeCount
-                )
-            }
-            guard lastOrdering == lastElement.comparing(next) else {
-                return Report(element: lastElement, ordering: lastOrdering, unsafeCount: acc.unsafeCount + 1)
-            }
-            return Report(
-                element: next, ordering: lastElement.comparing(next), unsafeCount: acc.unsafeCount
-            )
-        }.isSafe
+        report.isSafe() || report.reversed().isSafe()
     }
 let result1 =
 safe.count
@@ -64,7 +26,7 @@ struct Report: Equatable {
     }
     
     var isSafe: Bool {
-        unsafeCount < 2
+        unsafeCount < 2 // part1: 1
     }
 }
 
@@ -79,5 +41,29 @@ extension Int {
                 .orderedSame
             }
         }
+    }
+}
+
+extension Array where Element == Int {
+    func isSafe() -> Bool {
+        reduce(Report.epsilon) { acc, next in
+            guard let lastElement = acc.element else { // first element
+                return Report(element: next, ordering: nil, unsafeCount: acc.unsafeCount)
+            }
+            guard abs(lastElement - next) > 0 && abs(lastElement - next) < 4 else {
+                return Report(element: lastElement, ordering: acc.ordering, unsafeCount: acc.unsafeCount + 1)
+            }
+            guard let lastOrdering = acc.ordering else { // second valid element
+                return Report(
+                    element: next, ordering: lastElement.comparing(next), unsafeCount: acc.unsafeCount
+                )
+            }
+            guard lastOrdering == lastElement.comparing(next) else {
+                return Report(element: lastElement, ordering: lastOrdering, unsafeCount: acc.unsafeCount + 1)
+            }
+            return Report(
+                element: next, ordering: lastElement.comparing(next), unsafeCount: acc.unsafeCount
+            )
+        }.isSafe
     }
 }
