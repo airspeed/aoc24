@@ -24,9 +24,6 @@ final class AoCModel {
             Set(result.flatMap { start in
                 start.flatMap(\.connectedNeighbours)
             }.filter { $0.char == xmas })
-                print("xmas: \(xmas.rawValue)")
-                print("relevant: \(relevant.count)")
-                print("result: \(result.count)")
             let newSeries: [[WordPart]] =
             relevant.flatMap { (wordPart: WordPart) -> [[WordPart]] in
                 result.map { (resultPart: [WordPart]) -> [WordPart] in
@@ -41,8 +38,6 @@ final class AoCModel {
             return Set<[WordPart]>(newSeries)
         }
         .filter { $0.count == Xmas.allCases.count && $0.isInline }
-        print(result)
-        print(result.count)
         
         let _as =
         result
@@ -51,7 +46,6 @@ final class AoCModel {
                     wordPart.char == Xmas.a
                 }
             }
-        print(_as)
         let centerAs =
         Set(
             _as.filter { a in
