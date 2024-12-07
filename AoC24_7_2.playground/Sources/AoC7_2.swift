@@ -71,7 +71,17 @@ enum OperatorPart2: CaseIterable {
         switch self {
         case .add: return { $0 + $1 }
         case .multiply: return { $0 * $1 }
-        case .gestellt: return { Int("\($0)\($1)") ?? 0 }
+        case .gestellt: return { $0 * $1.nextMagnitude() + $1 }
+        }
+    }
+}
+
+extension Int {
+    func nextMagnitude(order: Self = 1) -> Self {
+        if self % order == self {
+            order
+        } else {
+            nextMagnitude(order: order * 10)
         }
     }
 }
