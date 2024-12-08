@@ -9,7 +9,8 @@ let rows =
 input.split(separator: "\n")
 
 let solution =
-performPart1(rows: rows)
+performPart2(rows: rows)
 
 print(solution)
 print(Date().timeIntervalSince(now))
+
