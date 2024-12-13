@@ -46,7 +46,7 @@ public func performPart2(
                 return [[block]]
             } else if let last = acc.last, last.map(\.fileID).contains(block.fileID) {
                 // append to block
-                return acc.prefix(acc.count - 1).map { $0 } + [last + [block]]
+                return acc.prefix(acc.count - 1) + [last + [block]]
             } else if acc.last?.map(\.fileID).contains(block.fileID) == false {
                 // append to list
                 return acc + [[block]]
@@ -144,7 +144,7 @@ func defrag2(
         return acc
     }
     let defragBlock = acc[indexToDefrag]
-    if let nextAvailableSpace = acc.firstIndex(where: { $0.isFree(defragBlock.count) }),
+    if let nextAvailableSpace = acc[..<indexToDefrag].firstIndex(where: { $0.isFree(defragBlock.count) }),
        nextAvailableSpace < indexToDefrag {
         var newAcc = acc
         newAcc.remove(at: indexToDefrag)

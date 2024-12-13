@@ -1,0 +1,171 @@
+// The Swift Programming Language
+// https://docs.swift.org/swift-book
+
+
+import Foundation
+
+let now = Date()
+let input = """
+12345
+"""
+let solution =
+performPart2(input: input)
+print(solution)
+print(Date().timeIntervalSince(now))
+ 
+
+
+public func performPart2(
+    input: String
+) -> Int {
+    let bitcode =
+    input.enumerated().reduce([Block]()) { acc, next in
+        let (index, position) = next
+        guard let length = Int("\(position)") else {
+            assertionFailure("Invalid position \(position).")
+            return acc
+        }
+        if index % 2 == 0 {
+            return acc + Array(repeating: Block.file(id: index / 2), count: length)
+        } else {
+            return acc + Array(repeating: Block.free, count: length)
+        }
+    }
+    print(bitcode)
+    let fragmentsCount = bitcode.filter(\.isFile).count
+    print(fragmentsCount)
+    let groups: [[Block]] =
+    bitcode
+        .reduce([[Block]]()) { acc, block in
+            if acc.isEmpty {
+                return [[block]]
+            } else if let last = acc.last, last.map(\.fileID).contains(block.fileID) {
+                // append to block
+                return acc.prefix(acc.count - 1) + [last + [block]]
+            } else if acc.last?.map(\.fileID).contains(block.fileID) == false {
+                // append to list
+                return acc + [[block]]
+            } else {
+                assertionFailure()
+                return acc
+            }
+        }
+    print(groups.count)
+    let reversedGroups = groups.reversed().map { $0 }
+    let defrag: [[Block]] =
+    defrag2(
+        acc: groups,
+        reversedStore: reversedGroups
+    )
+    let flatDefrag =
+    defrag
+        .flatMap { $0 }
+    let description =
+    defrag
+        .flatMap { xs in
+            xs.map(\.description).joined()
+        }
+        .joined()
+    let solution =
+    flatDefrag
+        .enumerated()
+        .reduce(0) { acc, next in
+            let (offset, element) = next
+            return acc + offset * element.checksum
+        }
+    return solution
+}
+
+enum Block {
+    case file(id: Int)
+    case free
+}
+extension Block: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .file(id: let id):
+            return "\(id)"
+        case .free:
+            return "."
+        }
+    }
+    
+    var isFile: Bool {
+        switch self {
+        case .file:
+            return true
+        case .free:
+            return false
+        }
+    }
+    
+    var fileID: Int {
+        if case .file(id: let id) = self {
+            id
+        } else {
+            -1
+        }
+    }
+    
+    var checksum: Int {
+        if case .file(id: let id) = self {
+            id
+        } else {
+            0
+        }
+    }
+}
+extension Block: Equatable {}
+extension Array {
+    func removing(at index: Int) -> Self {
+        var new = self
+        new.remove(at: index)
+        return new
+    }
+}
+
+func defrag2(
+    acc: [[Block]],
+    reversedStore: [[Block]]
+) -> [[Block]] {
+    // nextToDefrag: block index in reversedStore
+    // indexToDefrag: block index in acc
+    // defragBlock: block
+    // nextAvailableSpace: free space index in acc
+    guard let nextToDefrag =
+            reversedStore.firstIndex(where: \.isFile),
+          let indexToDefrag =
+            acc.firstIndex(of: reversedStore[nextToDefrag]) else {
+        return acc
+    }
+    let defragBlock = acc[indexToDefrag]
+    if let nextAvailableSpace = acc[..<indexToDefrag].firstIndex(where: { $0.isFree(defragBlock.count) }),
+       nextAvailableSpace < indexToDefrag {
+        var newAcc = acc
+        newAcc.remove(at: indexToDefrag)
+        newAcc.insert(Array(repeating: Block.free, count: defragBlock.count), at: indexToDefrag)
+        newAcc.remove(at: nextAvailableSpace)
+        newAcc.insert(Array(repeating: Block.free, count: acc[nextAvailableSpace].count - defragBlock.count), at: nextAvailableSpace)
+        newAcc.insert(defragBlock, at: nextAvailableSpace)
+        return defrag2(
+            acc: newAcc,
+            reversedStore: reversedStore.removing(at: nextToDefrag)
+        )
+    } else { // nop
+        return defrag2(
+            acc: acc,
+            reversedStore: reversedStore.removing(at: nextToDefrag)
+        )
+    }
+}
+
+extension Array where Element == Block {
+    var isFile: Bool {
+        map(\.isFile).allSatisfy({ $0 })
+    }
+    func isFree(_ count: Int) -> Bool {
+        self.count >= count
+        &&
+        map(\.isFile).allSatisfy({ !$0 })
+    }
+}
